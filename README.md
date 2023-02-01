@@ -48,36 +48,50 @@ Le multistage build permet de générer l'application avec l'image  maven:3.8.6-
 ### 1-4 Document your docker-compose file.
 ```
 version: '3.3'services:
-  backend:
-    container_name: backend
-    build: ./simple-api
-    networks:
+  backend: #création de l'image de l'api
+    container_name: backend #nom du conteneur
+    build: ./simple-api # chemin du dossier
+    networks: #reseau du conteneur
       - app-network
-    depends_on:
+    depends_on: #Ordre de démarage ici database en premier
       - database
 
   database:
     container_name: database
-    restart: always
+    restart: always #si erreur le conteneur restart
     build: ./database
     networks:
       - app-network
-    env_file:
+    env_file: #fichier pour les variables d'environement
       - database/.env
 
   httpd:
     container_name: reverse_proxy
     build: ./httpd
-    ports:
+    ports: #port du conteneur
       - "80:80"
     networks:
       - app-network
 
-volumes:
+volumes: #pour la persistance des données de database
   my_db_volume:
     driver: local
 
 networks:
   app-network:
 ```
+
+### 1-5 Document your publication commands and published images in dockerhub.
+
+```docker tag docker-compose_httpd:latest simonmachadocpe/httpd```  pour associer l'image voulue avec le chemin du compte docker<br>
+```docker push simonmachadocpe/httpd``` sert à push ce l'image asscoié à ce tag 
+
+## TP2
+
+### 2-1 What are testcontainers?
+
+### 2-2 Document your Github Actions configurations.
+
+### 2-3 Document your quality gate configuration.
+
 
