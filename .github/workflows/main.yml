@@ -35,8 +35,10 @@ jobs:
         with:
           context: ./docker-compose/database
           tags: ${{secrets.DOCKERHUB_LOGIN}}/database:latest
+          push: ${{ github.ref == 'refs/heads/main' }}
       - name: Build image and push httpd
         uses: docker/build-push-action@v3
         with:
           context: ./docker-compose/httpd
           tags: ${{secrets.DOCKERHUB_LOGIN}}/httpd:latest
+          push: ${{ github.ref == 'refs/heads/main' }}
