@@ -1,55 +1,38 @@
 name: CI devops 2023
 on:
-  #to begin you want to launch this job in main and develop
   push:
-    branches: main 
-  pull_request:
-
+    branches: main
+  pull_request: null
 jobs:
-  test-backend: 
+  test-backend:
     runs-on: ubuntu-22.04
     steps:
-     #checkout your github code using actions/checkout@v2.5.0
       - uses: actions/checkout@v2.5.0
-
-     #do the same with another action (actions/setup-java@v3) that enable to setup jdk 17
       - name: Set up JDK 17
         uses: actions/setup-java@v3
-        with : 
-            java-version: 17
-            distribution: "adopt"
-
-     #finally build your app with the latest command
+        with:
+          java-version: 17
+          distribution: adopt
       - name: Build and test with Maven
         run: cd ./docker-compose/simple-api && mvn clean verify
-    
-	# define job to build and publish docker image
   build-and-push-docker-image:
     needs: test-backend
-    # run only when code is compiling and tests are passing
     runs-on: ubuntu-22.04
-
-    # steps to perform in job
     steps:
       - name: Checkout code
-      uses: actions/checkout@v2.5.0
-
+        uses: actions/checkout@v2.5.0
       - name: Build image and push backend
-      uses: docker/build-push-action@v3
-      with:
-        # relative path to the place where source code with Dockerfile is located
-        context: ./simple-api
-        # Note: tags has to be all lower-case
-        tags:  ${{secrets.DOCKERHUB_LOGIN}}/backend:latest
-
+        uses: docker/build-push-action@v3
+        with:
+          context: ./simple-api
+          tags: ${{secrets.DOCKERHUB_LOGIN}}/backend:latest
       - name: Build image and push database
-      uses: docker/build-push-action@v3
-      with :
-        context : ./database
-        tags : ${{secrets.DOCKERHUB_LOGIN}}/database:latest
-
+        uses: docker/build-push-action@v3
+        with:
+          context: ./database
+          tags: ${{secrets.DOCKERHUB_LOGIN}}/database:latest
       - name: Build image and push httpd
-      uses: docker/build-push-action@v3
-      with :
-        context : ./httpd
-        tags : ${{secrets.DOCKERHUB_LOGIN}}/httpd:latest
+        uses: docker/build-push-action@v3
+        with:
+          context: ./httpd
+          tags: ${{secrets.DOCKERHUB_LOGIN}}/httpd:latest
