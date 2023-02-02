@@ -1,0 +1,13 @@
+---
+# tasks file for roles/database
+
+  - name: Create db container and connect to network
+    docker_container:
+      name: database
+      image: simonmachadocpe/database
+      networks:
+        - name: app-network
+      env :
+        POSTGRES_DB: db 
+        POSTGRES_USER: usr
+        POSTGRES_PASSWORD: pwd  

@@ -1,0 +1,11 @@
+---
+# tasks file for roles/app
+
+  - name: Create backend container and connect to network
+    docker_container:
+      name: backend
+      image: simonmachadocpe/backend
+      networks:
+        - name: app-network
+      ports:
+        - 8080:8080
