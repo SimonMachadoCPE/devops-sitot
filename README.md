@@ -245,12 +245,8 @@ Le role database va lancer l'image database contenu sur docker hub dans le rése
       image: simonmachadocpe/database
       networks:
         - name: app-network
-      env :
-        POSTGRES_DB: db 
-        POSTGRES_USER: usr
-        POSTGRES_PASSWORD: pwd  
 ```
-Le role app va lancer l'image backend avec les variables d'environements précisées dans env dans le réseau app-network avec une redirection sur le port 8080:
+Le role app va lancer l'image backend dans le réseau app-network avec une redirection sur le port 8080:
 ```
 ---
 # tasks file for roles/app
