@@ -106,7 +106,7 @@ on:
     branches: main
   pull_request: null
 jobs:
-  test-backend:
+  test-backend: #job de test du backend
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2.5.0
@@ -115,15 +115,15 @@ jobs:
         with:
           java-version: 17
           distribution: adopt
-      - name: Build and test with Maven
-        run: cd ./docker-compose/simple-api && mvn -B verify sonar:sonar -Dsonar.projectKey=SimonMachadoCPE_devops-sitot -Dsonar.organization=simonmachadocpe -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}  --file ./pom.xml
+      - name: Build and test with Maven #Nous avons modifié le step pour qu'il ne build plus (code qui n'évolue pas pendant le projet) et nous l'utilisons pour configurer la pipeline avec l'analyse SonarCloud 
+        run: cd ./docker-compose/simple-api && mvn -B verify sonar:sonar -Dsonar.projectKey=SimonMachadoCPE_devops-sitot -Dsonar.organization=simonmachadocpe -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} #Utilisation des clés d'organisation et de projet récupérés dans sonar
 
-  build-and-push-docker-image:
+  build-and-push-docker-image: #build et push automatique des images dans DockerHub
     needs: test-backend
     runs-on: ubuntu-22.04
     steps:
       - name: Login to DockerHub
-        run: docker login -u ${{ secrets.DOCKERHUB_LOGIN }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+        run: docker login -u ${{ secrets.DOCKERHUB_LOGIN }} -p ${{ secrets.DOCKERHUB_TOKEN }} #utilisation des secrets configurés dans GitHub
       - name: Checkout code
         uses: actions/checkout@v2.5.0
       - name: Build image and push backend
@@ -131,7 +131,7 @@ jobs:
         with:
           context: ./docker-compose/simple-api
           tags: ${{secrets.DOCKERHUB_LOGIN}}/backend:latest
-          push: ${{ github.ref == 'refs/heads/main' }}
+          push: ${{ github.ref == 'refs/heads/main' }} #push automatique de la branche main
       - name: Build image and push database
         uses: docker/build-push-action@v3
         with:
@@ -148,6 +148,16 @@ jobs:
 
 
 ### 2-3 Document your quality gate configuration.
+
+Après avoir configuré les secrets dans GitHub pour récupérer le token de Sonar, ainsi que d'avoir récupéré les clés de projet et d'organisation de Sonar pour les placer dans la configuration de la pipeline, nous avons configuré notre Quality Gate.
+Voici à nouveau l'extrait du main.yaml concerné :
+<code>
+    - name: Build and test with Maven #Nous avons modifié le step pour qu'il ne build plus (code qui n'évolue pas pendant le projet) et nous l'utilisons pour configurer la pipeline avec l'analyse SonarCloud 
+      run: cd ./docker-compose/simple-api && mvn -B verify sonar:sonar -Dsonar.projectKey=SimonMachadoCPE_devops-sitot -Dsonar.organization=simonmachadocpe -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} #Utilisation des clés d'organisation et de projet récupérés dans sonar
+</code>
+Dans un premier temps, nous avons effectué un push sur git pour vérifier que la connexion à Sonar fonctionnait et que nous retrouvions des informations sur le code.
+Ceci fonctionnait, donc nous avons défini dans Sonar que le Quality Gate se comparait à la dernière version, pour ne vérifier que les changements.
+Puis, nous avons fait un deuxième push pour vérifier. Le Quality Gate a été passé (il n'y avait aucune différence dans le code des commits).
 
 ## TP3
 
