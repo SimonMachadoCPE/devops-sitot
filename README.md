@@ -149,4 +149,70 @@ jobs:
 
 ### 2-3 Document your quality gate configuration.
 
+## TP3
+
+### 3-1 Document your inventory and base commands
+```
+all:
+ vars:
+   ansible_user: centos # Utilisateur ansible
+   ansible_ssh_private_key_file: /home/tp/TP3/id_rsa #chemin vers la clé Privée rsa
+ children:
+   prod:
+     hosts: simon.machado.takima.cloud # Nom de domaine 
+```
+
+<code> ansible all -i inventories/setup.yml -m ping</code> Commande pour tester l'inventory avec un ping : réponse pong valide<br>
+
+### 3-2 Document your playbook
+
+Playbook contenant l'instalation de docker sans appel de role
+
+```
+- hosts: all
+  gather_facts: false #pas de lancement du module de paramétrage des hotes par défaut
+  become: yes #pour lancer ansible depuis un utilisateur root
+
+# Install Docker
+  tasks: # taches éxécuté au lancement
+  - name: Clean packages
+    command:
+      cmd: dnf clean -y packages #supprime les packets dnf
+
+  - name: Install device-mapper-persistent-data #instalation de module
+    dnf:
+      name: device-mapper-persistent-data
+      state: latest
+
+  - name: Install lvm2  #instalation de module
+    dnf:
+      name: lvm2
+      state: latest
+
+  - name: add repo docker #création d'un repository docker
+    command:
+      cmd: sudo dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+
+  - name: Install #Configuration Docker dnf
+    dnf:
+      name: docker-ce
+      state: present
+
+  - name: install python3 #instalation de python
+    dnf:
+      name: python3
+
+  - name: Pip install #instalation de Docker avec python
+    pip:
+      name: docker
+
+  - name: Make sure Docker is running #Test de la configuration docker
+    service: name=docker state=started
+    tags: docker
+```
+
+### 3-3 Document your docker_container tasks configuration.
+
+
+
 
