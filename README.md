@@ -3,6 +3,7 @@
 ## TP 1
 
 ### 1-1 Document your database container essentials: commands and Dockerfile.
+
 <code>Docker pull postgre</code> pour récupérer l'image<br>
 <code>Docker build  -t some-postgres .</code> pour construire l'image avec le DockerFile contenu dans le répertoire <br>
 
@@ -43,8 +44,10 @@ ENTRYPOINT java -jar myapp.jar \# on lance l'api générer</code>
 Le multistage build permet de générer l'application avec l'image  maven:3.8.6-amazoncorretto-17 et de la lancer avec l'image amazoncorretto-17.
 
 ### 1-3 Document docker-compose most important commands.
+
 <code>docker-compose build</code> pour constuire l'image<br>
 <code>docker-compose up -d</code> pour lancer le container en tache de fond
+
 ### 1-4 Document your docker-compose file.
 ```
 version: '3.3'services:
@@ -90,7 +93,59 @@ networks:
 
 ### 2-1 What are testcontainers?
 
+Ce sont des bibliothèques Java qui permettent d'exécuter un ensemble de conteneurs Docker pendant les tests.
+
 ### 2-2 Document your Github Actions configurations.
+
+Notre fichier .github/workflows/main.yaml à la fin du TP2 :
+
+<code>
+name: CI devops 2023
+on:
+  push:
+    branches: main
+  pull_request: null
+jobs:
+  test-backend:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2.5.0
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: adopt
+      - name: Build and test with Maven
+        run: cd ./docker-compose/simple-api && mvn -B verify sonar:sonar -Dsonar.projectKey=SimonMachadoCPE_devops-sitot -Dsonar.organization=simonmachadocpe -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}  --file ./pom.xml
+
+  build-and-push-docker-image:
+    needs: test-backend
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Login to DockerHub
+        run: docker login -u ${{ secrets.DOCKERHUB_LOGIN }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Checkout code
+        uses: actions/checkout@v2.5.0
+      - name: Build image and push backend
+        uses: docker/build-push-action@v3
+        with:
+          context: ./docker-compose/simple-api
+          tags: ${{secrets.DOCKERHUB_LOGIN}}/backend:latest
+          push: ${{ github.ref == 'refs/heads/main' }}
+      - name: Build image and push database
+        uses: docker/build-push-action@v3
+        with:
+          context: ./docker-compose/database
+          tags: ${{secrets.DOCKERHUB_LOGIN}}/database:latest
+          push: ${{ github.ref == 'refs/heads/main' }}
+      - name: Build image and push httpd
+        uses: docker/build-push-action@v3
+        with:
+          context: ./docker-compose/httpd
+          tags: ${{secrets.DOCKERHUB_LOGIN}}/httpd:latest
+          push: ${{ github.ref == 'refs/heads/main' }}
+</code>
+
 
 ### 2-3 Document your quality gate configuration.
 
