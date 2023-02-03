@@ -213,6 +213,28 @@ Playbook contenant l'instalation de docker sans appel de role
 
 ### 3-3 Document your docker_container tasks configuration.
 
+Playbook qui va appeler chaque role dans l'ordre:
+```
+- hosts: all
+  gather_facts: false
+  become: yes
+
+# Install Docker
+  roles:
+    - docker
+    - network
+    - database
+    - app
+    - proxy
+```
+Le premier role va instaler docker (voir question précédente)
+Le deuxième role crée le réseau pour les prochains conteneur.
+```
+- name: Create a network
+  docker_network:
+      name: app-network
+```
+Le role database va lancer le conteneur postgre contenu sur docker hub
 
 
 
