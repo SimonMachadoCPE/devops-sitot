@@ -234,7 +234,48 @@ Le deuxième role crée le réseau pour les prochains conteneur.
   docker_network:
       name: app-network
 ```
-Le role database va lancer le conteneur postgre contenu sur docker hub
+Le role database va lancer l'image database contenu sur docker hub dans le réseau app-network
+```
+---
+# tasks file for roles/database
 
+  - name: Create db container and connect to network
+    docker_container:
+      name: database
+      image: simonmachadocpe/database
+      networks:
+        - name: app-network
+      env :
+        POSTGRES_DB: db 
+        POSTGRES_USER: usr
+        POSTGRES_PASSWORD: pwd  
+```
+Le role app va lancer l'image backend avec les variables d'environements précisées dans env dans le réseau app-network avec une redirection sur le port 8080:
+```
+---
+# tasks file for roles/app
 
+  - name: Create backend container and connect to network
+    docker_container:
+      name: backend
+      image: simonmachadocpe/backend
+      networks:
+        - name: app-network
+      ports:
+        - 8080:8080
+```
+On lance en dernier le serveur apache sur le port 80:
+```
+---
+# tasks file for roles/proxy
+
+  - name: Create proxy container and connect to network
+    docker_container:
+      name: httpd
+      image: simonmachadocpe/httpd
+      networks:
+        - name: app-network
+      ports: 
+        - 80:80      
+```
 
